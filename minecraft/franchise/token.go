@@ -5,14 +5,15 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/google/uuid"
-	"github.com/sandertv/gophertunnel/minecraft/franchise/internal"
-	"github.com/sandertv/gophertunnel/minecraft/protocol"
-	"golang.org/x/text/language"
 	"net/http"
 	"net/url"
 	"strconv"
 	"time"
+
+	"github.com/google/uuid"
+	"github.com/sandertv/gophertunnel/minecraft/franchise/internal"
+	"github.com/sandertv/gophertunnel/minecraft/protocol"
+	"golang.org/x/text/language"
 )
 
 // Token represents an authorization token used for franchise services.

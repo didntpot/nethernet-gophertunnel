@@ -4,13 +4,14 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"github.com/go-gl/mathgl/mgl32"
-	"github.com/google/uuid"
-	"github.com/sandertv/gophertunnel/minecraft/nbt"
 	"image/color"
 	"io"
 	"math"
 	"unsafe"
+
+	"github.com/go-gl/mathgl/mgl32"
+	"github.com/google/uuid"
+	"github.com/sandertv/gophertunnel/minecraft/nbt"
 )
 
 // Reader implements reading operations for reading types from Minecraft packets. Each Packet implementation

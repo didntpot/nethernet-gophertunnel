@@ -12,9 +12,10 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"fmt"
-	"github.com/df-mc/go-xsapi"
 	"net/http"
 	"time"
+
+	"github.com/df-mc/go-xsapi"
 
 	"github.com/google/uuid"
 	"golang.org/x/oauth2"

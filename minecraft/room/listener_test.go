@@ -4,18 +4,19 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/sandertv/gophertunnel/minecraft"
-	"github.com/sandertv/gophertunnel/minecraft/auth"
-	"github.com/sandertv/gophertunnel/minecraft/auth/xal"
-	"github.com/sandertv/gophertunnel/minecraft/franchise/signaling"
-	"github.com/sandertv/gophertunnel/minecraft/protocol/packet"
-	"golang.org/x/oauth2"
 	"math/rand"
 	"net"
 	"os"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/sandertv/gophertunnel/minecraft"
+	"github.com/sandertv/gophertunnel/minecraft/auth"
+	"github.com/sandertv/gophertunnel/minecraft/auth/xal"
+	"github.com/sandertv/gophertunnel/minecraft/franchise/signaling"
+	"github.com/sandertv/gophertunnel/minecraft/protocol/packet"
+	"golang.org/x/oauth2"
 )
 
 // TestListen demonstrates a world displayed in the friend list.

@@ -3,8 +3,9 @@ package test
 import (
 	"encoding/json"
 	"fmt"
-	"golang.org/x/oauth2"
 	"os"
+
+	"golang.org/x/oauth2"
 )
 
 func ReadToken(path string, src oauth2.TokenSource) (t *oauth2.Token, err error) {
