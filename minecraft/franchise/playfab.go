@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/df-mc/go-playfab"
 	"github.com/df-mc/go-playfab/title"
 )
 

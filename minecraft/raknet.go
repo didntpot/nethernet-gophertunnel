@@ -2,6 +2,7 @@ package minecraft
 
 import (
 	"context"
+	"log/slog"
 	"net"
 
 	"github.com/sandertv/go-raknet"
@@ -27,7 +28,7 @@ func (r RakNet) Listen(address string) (NetworkListener, error) {
 	return raknet.ListenConfig{ErrorLog: r.l.With("net origin", "raknet")}.Listen(address)
 }
 
-// Encrypted ...
+// DisableEncryption ...
 func (r RakNet) DisableEncryption() bool { return false }
 
 // BatchHeader ...

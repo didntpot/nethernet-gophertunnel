@@ -12,7 +12,6 @@ import (
 
 	"github.com/coder/websocket"
 	"github.com/coder/websocket/wsjson"
-	"github.com/df-mc/go-nethernet"
 	"github.com/sandertv/gophertunnel/minecraft/franchise/internal"
 )
 

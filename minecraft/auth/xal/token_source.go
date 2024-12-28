@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/df-mc/go-xsapi"
 	"github.com/sandertv/gophertunnel/minecraft/auth"
 	"golang.org/x/oauth2"
 )

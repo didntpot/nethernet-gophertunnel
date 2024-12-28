@@ -8,7 +8,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/df-mc/go-nethernet"
 	"github.com/sandertv/gophertunnel/minecraft"
 	"github.com/sandertv/gophertunnel/minecraft/room/internal"
 )

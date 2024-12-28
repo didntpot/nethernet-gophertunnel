@@ -12,6 +12,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log/slog"
 	"math/rand"
 	"net"
 	"strconv"
@@ -21,6 +22,7 @@ import (
 	"github.com/go-jose/go-jose/v3/jwt"
 	"github.com/google/uuid"
 	"github.com/sandertv/gophertunnel/minecraft/auth"
+	"github.com/sandertv/gophertunnel/minecraft/internal"
 	"github.com/sandertv/gophertunnel/minecraft/protocol"
 	"github.com/sandertv/gophertunnel/minecraft/protocol/login"
 	"github.com/sandertv/gophertunnel/minecraft/protocol/packet"
@@ -275,7 +277,7 @@ func readChainIdentityData(chainData []byte) (login.IdentityData, error) {
 		return login.IdentityData{}, fmt.Errorf("read chain: parse jwt: %w", err)
 	}
 	if err := tok.UnsafeClaimsWithoutVerification(&claims); err != nil {
-		return login.IdentityData{}, fmt.Errorf("read chain: read claims: %w", err) 
+		return login.IdentityData{}, fmt.Errorf("read chain: read claims: %w", err)
 	}
 	if claims.ExtraData.Identity == "" {
 		return login.IdentityData{}, fmt.Errorf("read chain: no extra data found")

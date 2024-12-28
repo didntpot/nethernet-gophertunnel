@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"net"
 	"strconv"
-
-	"github.com/df-mc/go-nethernet"
 )
 
 // NetherNet is an implementation of NetherNet network. Unlike RakNet, it needs to be registered manually with a Signaling.
