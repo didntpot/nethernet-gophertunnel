@@ -258,6 +258,9 @@ func init() {
 		IDServerBoundDiagnostics:         func() Packet { return &ServerBoundDiagnostics{} },
 		IDCameraAimAssist:                func() Packet { return &CameraAimAssist{} },
 		IDContainerRegistryCleanup:       func() Packet { return &ContainerRegistryCleanup{} },
+		IDMovementEffect:                 func() Packet { return &MovementEffect{} },
+		IDSetMovementAuthority:           func() Packet { return &SetMovementAuthority{} },
+		IDCameraAimAssistPresets:         func() Packet { return &CameraAimAssistPresets{} },
 	}
 	for id, pk := range serverOriginating {
 		RegisterPacketFromServer(id, pk)
@@ -314,6 +317,7 @@ func init() {
 		IDLecternUpdate:                   func() Packet { return &LecternUpdate{} },
 		IDClientCacheStatus:               func() Packet { return &ClientCacheStatus{} },
 		IDMapCreateLockedCopy:             func() Packet { return &MapCreateLockedCopy{} },
+		IDStructureTemplateDataRequest:    func() Packet { return &StructureTemplateDataRequest{} },
 		IDStructureTemplateDataResponse:   func() Packet { return &StructureTemplateDataResponse{} },
 		IDClientCacheBlobStatus:           func() Packet { return &ClientCacheBlobStatus{} },
 		IDEmote:                           func() Packet { return &Emote{} },

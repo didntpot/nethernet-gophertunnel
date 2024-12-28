@@ -218,4 +218,7 @@ const (
 	IDServerBoundDiagnostics
 	IDCameraAimAssist
 	IDContainerRegistryCleanup
+	IDMovementEffect
+	IDSetMovementAuthority
+	IDCameraAimAssistPresets
 )

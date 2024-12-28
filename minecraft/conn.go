@@ -55,7 +55,7 @@ type Conn struct {
 	close chan struct{}
 
 	conn        net.Conn
-	log         *log.Logger
+	log         *slog.Logger
 	authEnabled bool
 
 	proto         Protocol
@@ -150,7 +150,7 @@ type Conn struct {
 // Minecraft packets to that net.Conn.
 // newConn accepts a private key which will be used to identify the connection. If a nil key is passed, the
 // key is generated.
-func newConn(netConn net.Conn, key *ecdsa.PrivateKey, log *log.Logger, proto Protocol, flushRate time.Duration, limits bool, batchHeader []byte) *Conn {
+func newConn(netConn net.Conn, key *ecdsa.PrivateKey, log *slog.Logger, proto Protocol, flushRate time.Duration, limits bool, batchHeader []byte) *Conn {
 	conn := &Conn{
 		enc:          packet.NewEncoder(netConn, batchHeader),
 		dec:          packet.NewDecoder(netConn, batchHeader),
@@ -161,7 +161,7 @@ func newConn(netConn net.Conn, key *ecdsa.PrivateKey, log *log.Logger, proto Pro
 		spawn:        make(chan struct{}),
 		conn:         netConn,
 		privateKey:   key,
-		log:          log,
+		log:          log.With("raddr", netConn.RemoteAddr().String()),
 		hdr:          &packet.Header{},
 		proto:        proto,
 		readerLimits: limits,
@@ -362,7 +362,7 @@ func (conn *Conn) ReadPacket() (pk packet.Packet, err error) {
 	if data, ok := conn.takeDeferredPacket(); ok {
 		pk, err := data.decode(conn)
 		if err != nil {
-			conn.log.Println(err)
+			conn.log.Error("read packet: " + err.Error())
 			return conn.ReadPacket()
 		}
 		if len(pk) == 0 {
@@ -382,7 +382,7 @@ func (conn *Conn) ReadPacket() (pk packet.Packet, err error) {
 	case data := <-conn.packets:
 		pk, err := data.decode(conn)
 		if err != nil {
-			conn.log.Println(err)
+			conn.log.Error("read packet: " + err.Error())
 			return conn.ReadPacket()
 		}
 		if len(pk) == 0 {
@@ -770,16 +770,15 @@ func (conn *Conn) handleClientToServerHandshake() error {
 	}
 	pk := &packet.ResourcePacksInfo{TexturePackRequired: conn.texturePacksRequired}
 	for _, pack := range conn.resourcePacks {
-		if pack.DownloadURL() != "" {
-			pk.PackURLs = append(pk.PackURLs, protocol.PackURL{
-				UUIDVersion: fmt.Sprintf("%s_%s", pack.UUID(), pack.Version()),
-				URL:         pack.DownloadURL(),
-			})
+		texturePack := protocol.TexturePackInfo{
+			UUID:        pack.UUID(),
+			Version:     pack.Version(),
+			Size:        uint64(pack.Len()),
+			DownloadURL: pack.DownloadURL(),
 		}
-		texturePack := protocol.TexturePackInfo{UUID: pack.UUID(), Version: pack.Version(), Size: uint64(pack.Len())}
 		if pack.Encrypted() {
 			texturePack.ContentKey = pack.ContentKey()
-			texturePack.ContentIdentity = pack.Manifest().Header.UUID
+			texturePack.ContentIdentity = pack.Manifest().Header.UUID.String()
 		}
 		pk.TexturePacks = append(pk.TexturePacks, texturePack)
 	}
@@ -860,22 +859,23 @@ func (conn *Conn) handleResourcePacksInfo(pk *packet.ResourcePacksInfo) error {
 	packsToDownload := make([]string, 0, totalPacks)
 
 	for index, pack := range pk.TexturePacks {
-		if _, ok := conn.packQueue.downloadingPacks[pack.UUID]; ok {
-			conn.log.Printf("handle ResourcePacksInfo: duplicate texture pack (UUID=%v)\n", pack.UUID)
+		id := pack.UUID.String()
+		if _, ok := conn.packQueue.downloadingPacks[id]; ok {
+			conn.log.Warn("handle ResourcePacksInfo: duplicate texture pack", "UUID", pack.UUID)
 			conn.packQueue.packAmount--
 			continue
 		}
-		if conn.downloadResourcePack != nil && !conn.downloadResourcePack(uuid.MustParse(pack.UUID), pack.Version, index, totalPacks) {
+		if conn.downloadResourcePack != nil && !conn.downloadResourcePack(uuid.MustParse(id), pack.Version, index, totalPacks) {
 			conn.ignoredResourcePacks = append(conn.ignoredResourcePacks, exemptedResourcePack{
-				uuid:    pack.UUID,
+				uuid:    id,
 				version: pack.Version,
 			})
 			conn.packQueue.packAmount--
 			continue
 		}
 		// This UUID_Version is a hack Mojang put in place.
-		packsToDownload = append(packsToDownload, pack.UUID+"_"+pack.Version)
-		conn.packQueue.downloadingPacks[pack.UUID] = downloadingPack{
+		packsToDownload = append(packsToDownload, id+"_"+pack.Version)
+		conn.packQueue.downloadingPacks[id] = downloadingPack{
 			size:       pack.Size,
 			buf:        bytes.NewBuffer(make([]byte, 0, pack.Size)),
 			newFrag:    make(chan []byte),
@@ -905,9 +905,9 @@ func (conn *Conn) handleResourcePackStack(pk *packet.ResourcePackStack) error {
 	for _, pack := range pk.TexturePacks {
 		for i, behaviourPack := range pk.BehaviourPacks {
 			if pack.UUID == behaviourPack.UUID {
-				// We had a behaviour pack with the same UUID as the texture pack, so we drop the texture
+				// We had a behaviour pack with the same UUID as the texture pack, so we drop the behaviour
 				// pack and log it.
-				conn.log.Printf("handle ResourcePackStack: dropping behaviour pack (UUID=%v) due to a texture pack with the same UUID\n", pack.UUID)
+				conn.log.Warn("handle ResourcePackStack: dropping behaviour pack due to a texture pack with the same UUID", "UUID", pack.UUID)
 				pk.BehaviourPacks = append(pk.BehaviourPacks[:i], pk.BehaviourPacks[i+1:]...)
 			}
 		}
@@ -944,7 +944,7 @@ func (conn *Conn) hasPack(uuid string, version string, hasBehaviours bool) bool 
 		}
 	}
 	for _, pack := range conn.resourcePacks {
-		if pack.UUID() == uuid && pack.Version() == version && pack.HasBehaviours() == hasBehaviours {
+		if pack.UUID().String() == uuid && pack.Version() == version && pack.HasBehaviours() == hasBehaviours {
 			return true
 		}
 	}
@@ -976,7 +976,7 @@ func (conn *Conn) handleResourcePackClientResponse(pk *packet.ResourcePackClient
 	case packet.PackResponseAllPacksDownloaded:
 		pk := &packet.ResourcePackStack{BaseGameVersion: protocol.CurrentVersion, Experiments: []protocol.ExperimentData{{Name: "cameras", Enabled: true}}}
 		for _, pack := range conn.resourcePacks {
-			resourcePack := protocol.StackResourcePack{UUID: pack.UUID(), Version: pack.Version()}
+			resourcePack := protocol.StackResourcePack{UUID: pack.UUID().String(), Version: pack.Version()}
 			// If it has behaviours, add it to the behaviour pack list. If not, we add it to the texture packs
 			// list.
 			if pack.HasBehaviours() {
@@ -1075,12 +1075,12 @@ func (conn *Conn) handleResourcePackDataInfo(pk *packet.ResourcePackDataInfo) er
 	if !ok {
 		// We either already downloaded the pack or we got sent an invalid UUID, that did not match any pack
 		// sent in the ResourcePacksInfo packet.
-		return fmt.Errorf("unknown pack (UUID=%v)", id)
+		return fmt.Errorf("handle ResourcePackDataInfo: unknown pack (UUID=%v)", id)
 	}
 	if pack.size != pk.Size {
 		// Size mismatch: The ResourcePacksInfo packet had a size for the pack that did not match with the
 		// size sent here.
-		conn.log.Printf("pack (UUID=%v) had a different size in ResourcePacksInfo than in ResourcePackDataInfo\n", id)
+		conn.log.Warn("handle ResourcePackDataInfo: pack had a different size in ResourcePacksInfo than in ResourcePackDataInfo", "UUID", id)
 		pack.size = pk.Size
 	}
 
@@ -1116,13 +1116,13 @@ func (conn *Conn) handleResourcePackDataInfo(pk *packet.ResourcePackDataInfo) er
 		defer conn.packMu.Unlock()
 
 		if pack.buf.Len() != int(pack.size) {
-			conn.log.Printf("incorrect resource pack size (UUID=%v): expected %v, got %v\n", id, pack.size, pack.buf.Len())
+			conn.log.Error(fmt.Sprintf("download resource pack: incorrect resource pack size: expected %v, got %v", pack.size, pack.buf.Len()), "UUID", id)
 			return
 		}
 		// First parse the resource pack from the total byte buffer we obtained.
 		newPack, err := resource.Read(pack.buf)
 		if err != nil {
-			conn.log.Printf("invalid full resource pack data (UUID=%v): %v\n", id, err)
+			conn.log.Error("download resource pack: invalid full resource pack data: "+err.Error(), "UUID", id)
 			return
 		}
 		conn.packQueue.packAmount--
@@ -1164,7 +1164,7 @@ func (conn *Conn) handleResourcePackChunkData(pk *packet.ResourcePackChunkData) 
 // pack to be downloaded.
 func (conn *Conn) handleResourcePackChunkRequest(pk *packet.ResourcePackChunkRequest) error {
 	current := conn.packQueue.currentPack
-	if current.UUID() != pk.UUID {
+	if current.UUID().String() != pk.UUID {
 		return fmt.Errorf("expected pack UUID %v, but got %v", current.UUID(), pk.UUID)
 	}
 	if conn.packQueue.currentOffset != uint64(pk.ChunkIndex)*packChunkSize {
@@ -1413,5 +1413,5 @@ func (conn *Conn) closeErr(op string) error {
 	if msg := *conn.disconnectMessage.Load(); msg != "" {
 		return conn.wrap(DisconnectError(msg), op)
 	}
-	return conn.wrap(errClosed, op)
+	return conn.wrap(net.ErrClosed, op)
 }
