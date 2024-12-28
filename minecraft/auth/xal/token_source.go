@@ -3,10 +3,11 @@ package xal
 import (
 	"context"
 	"fmt"
+	"sync"
+
 	"github.com/df-mc/go-xsapi"
 	"github.com/sandertv/gophertunnel/minecraft/auth"
 	"golang.org/x/oauth2"
-	"sync"
 )
 
 func RefreshTokenSource(underlying oauth2.TokenSource, relyingParty string) xsapi.TokenSource {

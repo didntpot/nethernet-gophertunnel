@@ -12,20 +12,19 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/go-jose/go-jose/v3/jwt"
-	"github.com/google/uuid"
-	"github.com/sandertv/gophertunnel/minecraft/auth"
-	"github.com/sandertv/gophertunnel/minecraft/internal"
-	"github.com/sandertv/gophertunnel/minecraft/protocol"
-	"github.com/sandertv/gophertunnel/minecraft/protocol/login"
-	"github.com/sandertv/gophertunnel/minecraft/protocol/packet"
-	"golang.org/x/oauth2"
-	"log/slog"
 	"math/rand"
 	"net"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/go-jose/go-jose/v3/jwt"
+	"github.com/google/uuid"
+	"github.com/sandertv/gophertunnel/minecraft/auth"
+	"github.com/sandertv/gophertunnel/minecraft/protocol"
+	"github.com/sandertv/gophertunnel/minecraft/protocol/login"
+	"github.com/sandertv/gophertunnel/minecraft/protocol/packet"
+	"golang.org/x/oauth2"
 )
 
 // Dialer allows specifying specific settings for connection to a Minecraft server.

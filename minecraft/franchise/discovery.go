@@ -4,9 +4,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/sandertv/gophertunnel/minecraft/franchise/internal"
 	"net/http"
 	"net/url"
+
+	"github.com/sandertv/gophertunnel/minecraft/franchise/internal"
 )
 
 // Discover obtains a Discovery for the specific version, which includes environments for various franchise services.
