@@ -10,6 +10,8 @@ import (
 	"strconv"
 
 	"github.com/coder/websocket"
+	"github.com/df-mc/go-nethernet"
+	"github.com/df-mc/go-playfab"
 	"github.com/sandertv/gophertunnel/minecraft/auth/xal"
 	"github.com/sandertv/gophertunnel/minecraft/franchise"
 	"github.com/sandertv/gophertunnel/minecraft/protocol"

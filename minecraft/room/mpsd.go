@@ -8,6 +8,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/df-mc/go-xsapi"
 	"github.com/df-mc/go-xsapi/mpsd"
 	"github.com/google/uuid"
 )

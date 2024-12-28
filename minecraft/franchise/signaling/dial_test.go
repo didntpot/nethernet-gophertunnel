@@ -9,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/df-mc/go-nethernet"
 	"github.com/sandertv/gophertunnel/minecraft/auth"
 	"golang.org/x/oauth2"
 )

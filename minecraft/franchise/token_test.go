@@ -3,6 +3,7 @@ package franchise
 import (
 	"testing"
 
+	"github.com/df-mc/go-playfab"
 	"github.com/sandertv/gophertunnel/minecraft/auth"
 	"github.com/sandertv/gophertunnel/minecraft/auth/xal"
 	"github.com/sandertv/gophertunnel/minecraft/franchise/internal/test"
