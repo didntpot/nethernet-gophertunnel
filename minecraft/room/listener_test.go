@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"math/rand"
 	"net"
 	"os"
@@ -49,16 +50,18 @@ func TestListen(t *testing.T) {
 
 	status := DefaultStatus()
 	status.OwnerID = x.DisplayClaims().XUID
-	minecraft.RegisterNetwork("room", Network{
-		Network: minecraft.NetherNet{
-			Signaling: signals,
-		},
-		ListenConfig: ListenConfig{
-			Announcer: &XBLAnnouncer{
-				TokenSource: xal.RefreshTokenSource(src, "http://xboxlive.com"),
+	minecraft.RegisterNetwork("room", func(l *slog.Logger) minecraft.Network {
+		return Network{
+			Network: minecraft.NetherNet{
+				Signaling: signals,
 			},
-			StatusProvider: NewStatusProvider(status),
-		},
+			ListenConfig: ListenConfig{
+				Announcer: &XBLAnnouncer{
+					TokenSource: xal.RefreshTokenSource(src, "http://xboxlive.com"),
+				},
+				StatusProvider: NewStatusProvider(status),
+			},
+		}
 	})
 
 	l, err := minecraft.Listen("room", "")
